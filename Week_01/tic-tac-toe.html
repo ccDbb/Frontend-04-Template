@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>tic-tac-toe</title>
+</head>
+<body>
+    <div class="tic">
+        <ul class="tic-ul" id="tic-ul">
+
+        </ul>
+    </div>
+<div id="show-message">
+
+</div>
+</body>
+<script>
+    let dataStr=[
+        ['','',''],
+        ['','',''],
+        ['','',''],
+    ],
+     curryValue=1;//1为O，2为X
+    function initChessboard(){
+        let ul=document.getElementById('tic-ul');
+        ul.innerHTML="";
+        for(let i=0;i<dataStr.length;i++){
+            for(let j=0;j<dataStr[i].length;j++){
+                let dom=document.createElement("li");
+                dom.className="li";
+                dom.innerText=dataStr[i][j]==1?'O':dataStr[i][j]==2?'X':'';
+                dom.dataset.key=[i,j];
+                ul.appendChild(dom);
+
+            }
+        }
+        ul.addEventListener('click',function(e){
+            let target=e.target;
+            if(!target.innerText){
+                let str=target.dataset.key.split(",");
+                target.innerText=curryValue==1?'O':curryValue==2?'X':''
+                dataStr[str[0]][str[1]]=curryValue;
+                let re=isWin(dataStr,curryValue);
+                if(re)alert(target.innerText+"win");
+                curryValue=3-curryValue;
+                let bestChoiceResult=bestChoice(dataStr,curryValue);
+               console.log(bestChoice(dataStr,curryValue))
+                curryValue=robotMoves(dataStr,bestChoiceResult,curryValue)
+               // willWin(dataStr,curryValue);
+            }
+        })
+    }
+    function isWin(dataStr,curryValue){
+        //win三横行是否相等，swin三竖是否相等，xwin1 xy轴相等对角是否相，xwin2 x y轴坐标不相等的对角线判断
+        let xwin1=true,xwin2=true;
+        for(let i=0,len=dataStr.length;i<len;i++){
+            let win=true,swin=true
+            for(let j=0;j<dataStr[i].length;j++){
+                if(dataStr[i][j]!=curryValue){
+                    win=false;
+                }
+                if(dataStr[j][i]!=curryValue){
+                    swin=false;
+                }
+                if(i==j){
+                    if(dataStr[i][j]!=curryValue){
+                        xwin1=false;
+                    }
+                }
+                if(i==2-j){
+                    if(dataStr[i][j]!=curryValue){
+                        xwin2=false;
+                    }
+                }
+            }
+            if(win || swin)return true;
+        }
+        if(xwin1 ||xwin2)return true;
+    }
+    function willWin(dataStr,curryValue){
+        for(let i=0,len=dataStr.length;i<len;i++){
+            for(let j=0;j<dataStr.length;j++){
+                let newDataSrr=clone(dataStr);
+                if(!newDataSrr[i][j]){
+                    newDataSrr[i][j]=curryValue;
+                    if(isWin(newDataSrr,curryValue)){
+                        //showWillwin(curryValue);
+                        return [i,j]
+                    }
+                }
+            }
+        }
+        return null
+    }
+    function bestChoice(dataStr,curryValue){
+        let p,result=-2,point=null;//1为赢，0为和棋，-1为输
+        if(p=willWin(dataStr,curryValue)){
+            return {
+                point:p,
+                result:1
+            }
+        }
+
+        for(let i=0,len=dataStr.length;i<len;i++){
+            for(let j=0;j<dataStr[i].length;j++){
+                if(dataStr[i][j]){
+                    continue;
+                }
+                let tem=clone(dataStr);
+                tem[i][j]=curryValue;
+                let r=bestChoice(tem,3-curryValue).result;
+                if(-r>result){
+                    result=-r;
+                    point=[i,j]
+                }
+
+            }
+        }
+        return {
+            point: point,
+            result: point?result:0
+        }
+
+    }
+    function robotMoves(dataStr,re,curryValue){
+        if(re.point){
+            dataStr[re.point[0]][re.point[1]]=curryValue;
+            let test= curryValue==1?'O':curryValue==2?'X':'';
+            if(isWin(dataStr,curryValue))alert( `${test}  win`);
+            curryValue=3-curryValue
+            initChessboard();
+        }
+        return curryValue;
+
+    }
+    function showWillwin(curryValue){
+        let dom=document.getElementById('show-message');
+        let test= curryValue==1?'O':curryValue==2?'X':'';
+        console.log(`${test} will win`)
+        dom.innerText=`${test} will win`;
+    }
+    function clone(dataStr){
+        return JSON.parse(JSON.stringify(dataStr))
+    }
+
+    initChessboard();
+
+</script>
+<style>
+    .tic-ul{
+        display: flex;
+        width: 310px;
+        flex-flow: row wrap;
+    }
+    .li{
+        list-style-type: none;
+        width: 100px;
+        height: 100px;
+        background: green;
+        border: 1px solid #fff;
+        color: #fff;
+        text-align: center;
+        line-height: 100px;
+        font-size: 36px;
+    }
+</style>
+</html>
