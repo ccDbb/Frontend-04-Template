@@ -1,0 +1,54 @@
+<html>
+<heard>
+    <style>
+        .test{
+            display: flex;justify-content: start;
+        }
+        .light{width: 50px;height: 50px;background: gray;border-radius: 50%;
+        margin-right: 10px;;
+        }
+
+    </style>
+</heard>
+<body>
+<div class="test">
+    <div class="light red" id="red">
+    </div>
+    <div class="light green" id="greed">
+    </div>
+    <div class="light yellow" id="yellow">
+    </div>
+</div>
+<script>
+    //绿灯亮10秒，黄灯两秒，红灯五秒，无线循环
+    function sleep(){
+
+    }
+    method1();
+    function method1(){
+      //while(true){
+        setTimeout(function(){
+            lightOn("greed");
+            setTimeout(function(){
+                lightOn("yellow");
+                setTimeout(function(){
+                    lightOn("red")
+                },5*1000)
+            },2*1000)
+        },10*1000)
+     // }//
+      function lightOn(id){
+          let doms=document.getElementsByClassName('light');
+          for(let dom of doms){
+              if(dom.id==id){
+                  dom.background=`${id}`;
+              }else{
+                  dom.background='gray'
+              }
+          }
+      }
+    }
+</script>
+</body>
+
+</html>
