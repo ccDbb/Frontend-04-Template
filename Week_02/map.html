@@ -1,0 +1,185 @@
+<html>
+<head>
+    <style>
+        #map{
+            width: 600px;
+            display: flex;
+            flex-flow: row wrap;
+        }
+        .cell{
+            background: gray;
+            width: 5px;
+            height: 5px;
+            border-right: 1px solid #fff;
+            boder-buttom: 1px solid #fff;
+            display: inline-block;
+            border-bottom: 1px solid #fff;
+        }
+    </style>
+</head>
+<body>
+    <div id="map">
+
+    </div>
+    <div>
+        <button onclick="save()">保存</button>
+    </div>
+<!--    数组实现排序-->
+<!--    <script src="common.js"></script>-->
+<!--    二叉堆实现排序-->
+    <script src="sortedTree.js"></script>
+
+    <script>
+        let localMap=window.localStorage.getItem("map");
+        let map=localMap?JSON.parse(localMap):initMap();
+
+        function initMap(){
+            let mapnew=new Array(100);
+            for(let i=0;i<100;i++){
+                mapnew[i]=new Array(100);
+                for(let j=0;j<100;j++){
+                    mapnew[i][j]=0;
+                }
+            }
+            return mapnew;
+        }
+        function initHtml(){
+            let domMap=document.getElementById('map');
+            let html="",isDown=false,clear=false;
+            for(let i=0;i<100;i++){
+                for(let j=0;j<100;j++){
+                    if(map[i][j]==1){
+                        html=html+ `<div class='cell' id="map_${i}_${j}" data-key="${[i,j]}" style="background: #333"></div>`
+                    }else{
+                        html=html+ `<div class='cell' id="map_${i}_${j}" data-key="${[i,j]}"></div>`
+                    }
+
+                }
+            }
+            domMap.innerHTML=html;
+            domMap.addEventListener("mousemove",function (e) {
+                if(isDown){
+                    let dom=e.target;
+                    let key=dom.dataset.key.split(",");
+                    if(clear){
+                        map[key[0]][key[1]]=0;
+                        dom.style.background="gray";
+                    }else{
+                        dom.style.background="#333";
+                        map[key[0]][key[1]]=1;
+                    }
+
+                }
+
+            })
+            domMap.addEventListener('mousedown',function(e){
+                isDown=true;
+                console.log("mousedown");
+            })
+            domMap.addEventListener('mouseup',function(e){
+                console.log("mouseup");
+                isDown=false;
+                clear=false;
+            })
+            domMap.addEventListener('contextmenu',function(e){
+                e.preventDefault();
+                clear=true;
+            })
+        }
+        function save(){
+            console.log(map)
+            try{
+                window.localStorage.setItem("map",JSON.stringify(map));
+            }catch (e) {
+
+            }
+        }
+        async function search(map,start,result) {
+            let cloneMap=Object.create(map);
+            let list=new Array();
+            if(list.length<=0){
+                list.push(start);
+                cloneMap[start[0]][start[1]]=2;
+            }
+            let sorted=new Sorted(list,(a,b)=>{
+                let x1=result[0]-a[0],y1=result[1]-a[1],x2=result[0]-b[0],y2=result[1]-b[1];
+                return (x1*x1+y1*y1)-(x2*x2+y2*y2)>0?true:false}
+                )
+
+            while(sorted.length>0){
+                let curryNode=sorted.take();
+                if(JSON.stringify(curryNode)==JSON.stringify(result)){
+                   await drawPath(start,curryNode);
+                    break;
+                }
+
+                if(curryNode[0]==99 && curryNode[1]==99)break;
+                await sleep(5);
+                await setHtml(curryNode[0],curryNode[1])
+                await pushList(curryNode[0]-1,curryNode[1],curryNode);
+                await pushList(curryNode[0]+1,curryNode[1],curryNode);
+                await pushList(curryNode[0],curryNode[1]-1,curryNode);
+                await pushList(curryNode[0],curryNode[1]+1,curryNode);
+
+                await pushList(curryNode[0]-1,curryNode[1]-1,curryNode);
+                await pushList(curryNode[0]-1,curryNode[1]+1,curryNode);
+                await pushList(curryNode[0]+1,curryNode[1]+1,curryNode);
+                await pushList(curryNode[0]+1,curryNode[1]-1,curryNode);
+
+
+            }
+            function pushList(i,j,curryNode){
+                if(i>=0 && j>=0 && i<100 && j<100){
+                    if(cloneMap[i][j])return;
+                    //在sorted类里已经判断完成
+                    // let list=sorted.data;
+                    // let isHas=list.filter(item=>{
+                    //     return item[0]==i && item[1]==j;
+                    // })
+                    // if(isHas.length>0){
+                    //     return;
+                    // }
+                    sorted.push([i,j]);
+                    cloneMap[i][j]=curryNode;
+                }else{
+                    return;
+                }
+
+            }
+            async function drawPath(start,endNode){
+                let con=cloneMap[endNode[0]][endNode[1]];
+                while(con && con!=1){
+                    con=cloneMap[con[0]][con[1]];
+                    if(con[0]==start[0] && con[1]==start[1]){
+                        break
+                    }
+                    await sleep(5);
+                   await setHtml(con[0],con[1],'red')
+                }
+
+
+            }
+           async function setHtml(i,j,color){
+                let dom=document.getElementById(`map_${i}_${j}`);
+                if(dom){
+                    if(color){
+                        dom.style.background=color;
+                    }else{
+                        dom.style.background='blue';
+                    }
+
+                }
+
+            }
+        }
+        function sleep(time){
+            return new Promise(function(resolve){
+                setTimeout(resolve,time)
+            })
+        }
+        initHtml();
+
+
+    </script>
+</body>
+</html>

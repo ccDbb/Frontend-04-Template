@@ -1,0 +1,125 @@
+<html>
+<head>
+
+</head>
+<script>
+    let reg=/([0-9]+)|([ \t]+)|([\r\n]+)|(\*)|(\/)|(\+)|(\-)/g;
+    let dictionary=["Number",'Whitespace',"LineTerminator","*","/","+","-"];
+    function* tokenize(source){
+        let result=null;
+        let lastIndex=0;
+        while(true){
+            lastIndex=reg.lastIndex;
+            result=reg.exec(source);
+            if(!result)break;
+            //判断数组越界，但是不明白为什么要减去lastIndex；
+            // console.log(reg.lastIndex,lastIndex,result[0].length,result)
+
+            if(reg.lastIndex-lastIndex>result[0].length)break;
+            let token={};
+            for(let i=0,len=dictionary.length;i<len;i++){
+                //因为exec执行结果中0的位置值为匹配本身
+                if(result[i+1]){
+                    //console.log(dictionary[i],result[i+1])
+                    token.type=dictionary[i];
+                    token.value=result[i+1];
+                }
+
+            }
+            yield token
+        }
+        yield 'EOF'
+
+    }
+    let source=[];
+   for(let item of tokenize("1024*10/25+89*89")) {
+       source.push(item);
+   }
+   function MultiplicativeExpression(source){
+       if(source[0].type=='Number'){
+           let node={
+               type:"MultiplicativeExression",
+               children:[source[0]]
+           }
+           source[0]=node;
+           return MultiplicativeExpression(source);
+
+       }
+       if(source[0].type=='MultiplicativeExression' && source[1] && source[1].type=='*'){
+           let node={
+               type:"MultiplicativeExression",
+               children: [],
+               operator:"*"
+           }
+           //将前三项放入的数组里
+           node.children.push(source.shift())
+           node.children.push(source.shift())
+           node.children.push(source.shift())
+           //source 第一个元素设置。
+           source.unshift(node);
+           return MultiplicativeExpression(source)
+       }
+       if(source[0].type=='MultiplicativeExression' && source[1] && source[1].type=='/'){
+           let node={
+               type:"MultiplicativeExression",
+               children: [],
+               operator:"/"
+           }
+           node.children.push(source.shift())
+           node.children.push(source.shift())
+           node.children.push(source.shift())
+           source.unshift(node);
+           return MultiplicativeExpression(source)
+       }
+       if(source[0].type=='MultiplicativeExression'){
+           return source[0];
+       }
+
+
+   }
+// console.log(MultiplicativeExpression(source));
+   console.log(source);
+   function AdditiveExpression(source){
+       MultiplicativeExpression(source)
+       if(source[0].type=='MultiplicativeExression'){
+           let node={
+               type:'AdditiveExpression',
+               children:[source[0]]
+           }
+           source[0]=node;
+           return AdditiveExpression(source);
+       }
+       if(source[0].type=='AdditiveExpression' &&source[1] && source[1].type=="+"){
+           let node={
+               type:'AdditiveExpression',
+               children:[],
+               operator:"+"
+           }
+           node.children.push(source.shift())
+           node.children.push(source.shift())
+           MultiplicativeExpression(source);
+           node.children.push(source.shift())
+           source.unshift(node);
+           return AdditiveExpression(source);
+       }
+       if(source[0].type=='AdditiveExpression' &&source[1] && source[1].type=="-"){
+           let node={
+               type:'AdditiveExpression',
+               children:[],
+               operator:"-"
+           }
+           node.children.push(source.shift())
+           node.children.push(source.shift())
+           MultiplicativeExpression(source);
+           node.children.push(source.shift())
+           source.unshift(node);
+           return AdditiveExpression(source);
+       }
+       if(source[0].type=='AdditiveExpression'){
+           return source[0];
+       }
+   }
+    console.log(AdditiveExpression(source));
+
+</script>
+</html>
