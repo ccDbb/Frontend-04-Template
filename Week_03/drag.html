@@ -1,7 +1,15 @@
 <html>
 <head></head>
 <body>
-<div id="drag" style="width: 100px;height: 100px;background: #ccc"></div>
+<div id="content">
+    文字 文字 文字 文字文字 文字 文字 文字 文字 文字文字 文字 文字 文字 文字 文字文字 文字 文字 文字 文字 文字文字 文字
+    文字 文字 文字 文字文字 文字 文字 文字 文字 文字文字 文字 文字 文字 文字 文字文字 文字 文字 文字 文字 文字文字 文字
+    文字 文字 文字 文字文字 文字 文字 文字 文字 文字文字 文字 文字 文字 文字 文字文字 文字 文字 文字 文字 文字文字 文字
+    文字 文字 文字 文字文字 文字 文字 文字 文字 文字文字 文字 文字 文字 文字 文字文字 文字 文字 文字 文字 文字文字 文字
+    文字 文字 文字 文字文字 文字 文字 文字 文字 文字文字 文字 文字 文字 文字 文字文字 文字 文字 文字 文字 文字文字 文字文字 文字 文字 文字文字 文字 文字 文字 文字 文字文字 文字 文字 文字 文字 文字文字 文字 文字 文字 文字 文字文字 文字
+    文字 文字 文字 文字文字 文字 文字 文字 文字 文字文字 文字 文字 文字 文字 文字文字 文字 文字 文字 文字 文字文字 文字
+</div>
+<div id="drag" style="display:inline-block;width: 100px;height: 100px;background: #ccc"></div>
 <script>
     let drag=document.getElementById("drag");
     let baseX=0,baseY=0;
@@ -9,7 +17,10 @@
         let startX=eventDown.clientX,startY=eventDown.clientY;
         let move=(event)=>{
             console.log( drag.style.transform)
-           drag.style.transform=`translate(${baseX+event.clientX-startX}px,${baseY+event.clientY-startY}px)`
+            let range=getNearest(event.clientX,event.clientY);
+            range.insertNode(drag);
+
+           //drag.style.transform=`translate(${baseX+event.clientX-startX}px,${baseY+event.clientY-startY}px)`
           //  drag.style.transform=`translate(${event.clientX}px,${event.clientY}px)`
         }
         let up=(event)=>{
@@ -23,6 +34,30 @@
         document.addEventListener("mouseup",up)
 
     })
+    let ranges=[]
+    let content=document.getElementById("content");
+    for(let i=0,len=content.childNodes[0].textContent.length;i<len;i++){
+        let range=document.createRange()
+        range.setStart(content.childNodes[0],i);
+        range.setEnd(content.childNodes[0],i);
+        console.log(range.getBoundingClientRect())
+        ranges.push(range);
+
+    }
+    function getNearest(x,y){
+        let min=Infinity;
+        let nearest=null;
+        for(let range of ranges){
+            let rect=range.getBoundingClientRect();
+            let distance=(rect.x-x) **2+(rect.y-y)**2;
+            if(distance<min){
+                nearest=range;
+                min=distance;
+            }
+        }
+        return nearest
+    }
+    document.addEventListener("selectstart",event=>event.preventDefault())
 </script>
 </body>
 </html>
