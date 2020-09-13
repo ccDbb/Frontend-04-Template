@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<script>
+    let $=Symbol('$')
+    class Trie{
+       constructor(){
+           //设置根节点
+           this.root=new Object(null);
+       }
+       //字符串生成一个字典树
+       insert(word){
+           let node=this.root;
+           //循环设置一颗树，每个字符串是一课树
+           for(let chat of word){
+               if(!node[chat]) node[chat]=new Object(null);
+               node=node[chat];
+           }
+           //字符串里值都取完了，设置一个特殊叶子节点， 代表当前字符串结束
+           if(!node[$])node[$]=0
+           node[$]++;
+       }
+       //查找字符串重复最多的
+       serchMore(){
+           let max=0;//次数最小值
+           let maxWordMap=new Map();//单词次数对应map
+           let maxword="";
+            dep(this.root,"");
+           function dep(node,word){
+               if(node){
+                   //判断当前节点是否是单词的最后，如果是判断单词重复次数
+                   if(node[$] && node[$]>max){
+                       max=node[$];
+                       maxword=word
+                   }
+                   //循环node里所有对象
+                   for(let item in node){
+                        word=word+item;//node里key值对应的字符串拼接一起，形成单词
+                        dep(node[item],word);//继续递归调用node节点下子节点。直到node节点下只有$
+
+                   }
+               }
+           }
+          console.log(maxword,max)
+
+       }
+    }
+    let tr=new Trie();
+    inserfn();
+    console.log(tr.root)
+    //循环插入字符串
+    function inserfn(){
+
+        for(let i=0;i<10000;i++){
+            let str=routerStr(4);
+            tr.insert(str)
+        }
+        // tr.insert("abcd222")
+        // tr.insert("abcd222")
+        // tr.insert("abcd222")
+        // tr.insert("abcd222")
+        // tr.insert("abcd")
+        // tr.insert("abcd")
+        // tr.insert("abcd")
+        // tr.insert("abcd")
+        // tr.insert("abcd222")
+
+    }
+    //生成一个随机字符串串
+    function routerStr(len){
+        let strs="";
+        for(let i=0;i<len;i++){
+            let one=String.fromCharCode(Math.floor(Math.random()*26)+"a".charCodeAt(0))
+            strs=strs+one;
+        }
+        console.log(strs)
+        return strs
+    }
+
+</script>
+</body>
+</html>

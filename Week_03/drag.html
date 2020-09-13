@@ -1,0 +1,28 @@
+<html>
+<head></head>
+<body>
+<div id="drag" style="width: 100px;height: 100px;background: #ccc"></div>
+<script>
+    let drag=document.getElementById("drag");
+    let baseX=0,baseY=0;
+    drag.addEventListener("mousedown",function(eventDown){
+        let startX=eventDown.clientX,startY=eventDown.clientY;
+        let move=(event)=>{
+            console.log( drag.style.transform)
+           drag.style.transform=`translate(${baseX+event.clientX-startX}px,${baseY+event.clientY-startY}px)`
+          //  drag.style.transform=`translate(${event.clientX}px,${event.clientY}px)`
+        }
+        let up=(event)=>{
+            baseX=baseX+event.clientX-startX;
+            baseY=baseY+event.clientY-startY;
+            console.log("up")
+            document.removeEventListener("mousemove",move)
+            document.removeEventListener("mouseup",up)
+        }
+        document.addEventListener("mousemove",move);
+        document.addEventListener("mouseup",up)
+
+    })
+</script>
+</body>
+</html>

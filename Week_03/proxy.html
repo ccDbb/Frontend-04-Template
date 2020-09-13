@@ -1,0 +1,88 @@
+<input type="range" id="r" min="0" max="255">
+<input type="range" id="g" min="0" max="255">
+<input type="range" id="b" min="0" max="255">
+<div id="color" style="width: 100px;height: 100px;background:#ccc "></div>
+<script>
+    let callbacks=new Map();
+    let userReactives=[];
+    let obj={
+        r:1,
+        g:1,
+        b:1
+    }
+    let po=reactive(obj);
+
+    regestEffect()
+    //注册effect事件和页面change事件
+    function regestEffect(){
+        effect(()=>{
+            document.getElementById("r").value=po.r;
+        })
+        effect(()=>{
+            document.getElementById("g").value=po.g;
+        })
+        effect(()=>{
+            document.getElementById("b").value=po.b;
+        })
+        document.getElementById("r").addEventListener("change",event=>{
+            po.r=event.target.value;
+            setColor();
+        })
+        document.getElementById("b").addEventListener("change",event=>{
+            po.b=event.target.value;
+            setColor()
+        })
+        document.getElementById("g").addEventListener("change",event=>{
+            po.g=event.target.value;
+            setColor()
+        })
+
+
+    }
+    //设置调色板的背景色
+    function setColor(){
+        document.getElementById("color").style.background=`rgb(${po.r},${po.g},${po.b})`;
+    }
+    //注册事件
+    function effect(callback){
+        //callbacks.push(callback);
+        userReactives=[];
+        callback();
+        console.log(userReactives)
+        //设置callbacks，以对象和属性为key值，
+        for(let reatives of userReactives){
+            let obj=reatives[0],prop=reatives[1];
+             if(!callbacks.has(obj)){
+                 callbacks.set(obj,new Map());
+             }
+             if(!callbacks.get(obj).has(prop)){
+                 callbacks.get(obj).set(prop,new Array())
+             }
+             //callbacks里有值有属性时，设置对应的callback，callback可能有多个，所以push
+             callbacks.get(obj).get(prop).push(callback);
+            //     callbacks.get
+        }
+
+
+    }
+    function reactive(object){
+       return new Proxy(obj,{
+            set(obj,prop,receiver){
+                obj[prop]=receiver;
+                //当修改属性值时，执行对应属性的callback
+                if(callbacks.get(obj) && callbacks.get(obj).get(prop)){
+                    for(let callback of callbacks.get(obj).get(prop)){
+                        callback();
+                    }
+                }
+                return obj[prop];
+            },
+            get(obj,prop){
+                //console.log(obj,prop)
+                userReactives.push([obj,prop])
+                return obj[prop];
+            }
+        })
+    }
+
+</script>
