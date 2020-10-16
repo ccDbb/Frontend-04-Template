@@ -6,10 +6,11 @@ http.createServer((require,response)=>{
         console.log(error);
     }).
     on("data",(chunk)=>{
-        body.push(chunk.toString());
+        body.push(chunk);
+        console.log(body)
     }).on("end",()=>{
-        console.log("end")
-        body=Buffer.connect(body).toString();
+
+        body = Buffer.concat(body).toString()
         console.log("body:",body)
         response.writeHead(200,{'Content-Type':'text/html'});
         response.end(' hello world')

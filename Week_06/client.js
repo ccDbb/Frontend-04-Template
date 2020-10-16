@@ -19,12 +19,12 @@ class Request {
         }
         this.headers["Content-Length"]=this.bodyText.length;
     }
-    //显示发送投的所有信息
+    //显示发送投的所有信息，这里的信息必须符合http规范，如果不合法会返回400
     toString(){
-        return `${this.method} ${this.path} HTTP/1.1\r
-       ${Object.keys(this.headers).map(key=>`${key}:${this.headers[key]}`).join('\r\n')}\r\r
-       ${this.bodyText}`
+        let headerStr=Object.keys(this.headers).map(key=>`${key}:${this.headers[key]}`).join('\r\n')
+        return `${this.method} ${this.path} HTTP/1.1\r\n${headerStr}\r\n\r\n${this.bodyText}`
     }
+
     //给服务器端发送消息，返回值为promise，调用返回值得到的response的返回值。
     send(connection){
         return new Promise((resolve ,reject)=>{
@@ -36,8 +36,8 @@ class Request {
             }else{
                 //创建链接
                 connection=net.createConnection({
-                    host:this.host,
-                    port:this.port
+                    host:"127.0.0.1",
+                    port:"8088"
                 },()=>{
                     console.log(this.toString())
                     connection.write(this.toString());
@@ -46,7 +46,7 @@ class Request {
             //添加connection链接的监听
             //接收到服务端发送过来的数据
             connection.on('data',(data)=>{
-                console.log(data.toString())
+                console.log("respond==",data.toString())
                 parser.receive(data.toString());
                 if(parser.isFinished){
                     resolve(parser.response);
@@ -66,6 +66,22 @@ class Request {
 }
 class ResponseParser{
     constructor() {
+        this.WAITING_STATUS_LINE=0;
+        this.WAITING_STATUS_LINE_END=1;
+        this.WAITING_HEADER_NAME=2;
+        this.WAITING_HEADER_SPACE=3;
+        this.WAITING_HEADER_VALUE=4;
+        this.WAITING_HEADER_LINE_END=5;
+        this.WAITING_HEADER_BLOCK_END=6;
+        this.WAITING_BODY=7;
+
+        this.current=this.WAITING_STATUS_LINE;
+        this.statusLine="";
+        this.headers={};
+        this.headerName="";
+        this.headerValue="";
+        this.bodyParser=null;
+
         this.isFinished=false;
         this.response="";
     }
@@ -75,12 +91,23 @@ class ResponseParser{
         }
     }
     receiveChat(chat){
+        if(this.current==this.WAITING_STATUS_LINE){
+            if(chat==="\r"){
+                this.current=this.WAITING_STATUS_LINE_END;
+            }else{
+                this.statusLine=this.statusLine+chat;
+            }
+        }else if(this.current==this.WAITING_STATUS_LINE_END){
+            if(chat==="\n"){
+
+            }
+        }
 
     }
 }
 void async function(){
     let request=new Request({
-        method:"GET",
+        method:"POST",
         host:"127.0.0.1",
         port:"8088",
         path:"/",
