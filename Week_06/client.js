@@ -76,30 +76,134 @@ class ResponseParser{
         this.WAITING_BODY=7;
 
         this.current=this.WAITING_STATUS_LINE;
-        this.statusLine="";
+        this.statusLine="";//返回头第一行内容
         this.headers={};
         this.headerName="";
         this.headerValue="";
         this.bodyParser=null;
 
-        this.isFinished=false;
         this.response="";
+    }
+    get isFinished(){
+        return this.bodyParser && this.bodyParser.isFinished;
     }
     receive(string){
         for(let i=0;i<string.length;i++){
             this.receiveChat(string.charAt(i));
         }
+        console.log("-------bodyParser start------\n",this.bodyParser.content.join(""),"\n-------bodyParser------");
+        // console.log("-------this.bodyParser start------\n",this.bodyParser,"\n-------this.bodyParser end------");
     }
     receiveChat(chat){
+        //匹配返回头第一行，以\r\n结束。HTTP/1.1 200 OK
         if(this.current==this.WAITING_STATUS_LINE){
             if(chat==="\r"){
                 this.current=this.WAITING_STATUS_LINE_END;
             }else{
                 this.statusLine=this.statusLine+chat;
             }
+            //返回头第一行结束，开始接收header内容。如下
+            //Content-Type: text/html
+            //Date: Mon, 19 Oct 2020 13:25:51 GMT
+            //Connection: keep-alive
         }else if(this.current==this.WAITING_STATUS_LINE_END){
             if(chat==="\n"){
+                this.current=this.WAITING_HEADER_NAME;
+            }
+            //开始接收header name
+        }else if(this.current==this.WAITING_HEADER_NAME){
+            if(chat===":"){
+                this.current=this.WAITING_HEADER_VALUE;
+            }else if(chat==="\r"){
+                //如果以换行开始，证明是两个换行，开始接收body
+                this.current=this.WAITING_HEADER_BLOCK_END;
+                if(this.headers['Transfer-Encoding']==='chunked'){
+                    this.bodyParser=new TrunkedBodyParser();
+                }
 
+            }else {
+                this.headerName+=chat;
+            }
+            //接收header value
+        }else if(this.current==this.WAITING_HEADER_VALUE){
+            if(chat===" "){
+
+            }else if(chat=="\r"){
+                this.headers[this.headerName]=this.headerValue;
+                this.headerName="";
+                this.headerValue="";
+                //header头值的结束
+                this.current=this.WAITING_HEADER_LINE_END;
+            }else{
+                this.headerValue+=chat;
+            }
+        //header一行的结束
+        }else if(this.current==this.WAITING_HEADER_LINE_END){
+            if(chat=="\n"){
+                this.current=this.WAITING_HEADER_NAME;
+            }
+
+        }else if(this.current==this.WAITING_HEADER_BLOCK_END){
+            //如果两个\r\n证明进入body
+            if(chat==="\n"){
+                this.current=this.WAITING_BODY;
+            }
+        }else if(this.current==this.WAITING_BODY){//接收body里的值
+            this.bodyParser.receiveChar(chat);
+
+        }
+
+    }
+
+
+
+}
+class TrunkedBodyParser{
+    constructor(){
+        this.WAITING_LENGTH=0;
+        this.WAITING_LENGTH_LINE_END=1;
+        this.READING_TRUNK=2;
+        this.WAITING_NEW_LINE=3;
+        this.WAITING_NEW_LINE_END=4;
+        this.length=0;
+        this.content=[];
+        this.isFinished=false;
+        this.current=this.WAITING_LENGTH;
+
+    }
+    //解析body里值
+    //b
+   // hello world
+   // 0
+    receiveChar(char){
+        if(this.current===this.WAITING_LENGTH){
+            if(char==="\r"){
+                if(this.length===0){
+                    this.isFinished=true;
+                }
+                this.current=this.WAITING_LENGTH_LINE_END;
+            }else{
+                this.length=parseInt(char,16);
+            }
+        }else if(this.current===this.WAITING_LENGTH_LINE_END){
+            if(char==="\n"){//首行结束，
+                this.current=this.READING_TRUNK;
+            }
+        }else if(this.current===this.READING_TRUNK){//正式进入内容
+
+            this.content.push(char);
+            this.length--;
+            if(this.length==0){
+                this.current=this.WAITING_NEW_LINE;
+            }
+
+        }else if(this.current==this.WAITING_NEW_LINE){
+            if(char=="\r"){
+                this.current=this.WAITING_NEW_LINE_END;
+            }
+        }else if(this.current==this.WAITING_NEW_LINE_END){
+            if(this.current=="\n"){
+                this.current=this.WAITING_LENGTH;
             }
         }
 
@@ -120,7 +224,10 @@ void async function(){
     })
     try{
         let response=await request.send();
-        console.log(response);
+        response.then((data)=>{
+            console.log("response data==",data);
+        })
+
     }catch (e) {
         console.log("调用时报错",e)
     }

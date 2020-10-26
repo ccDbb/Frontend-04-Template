@@ -13,7 +13,7 @@ http.createServer((require,response)=>{
         body = Buffer.concat(body).toString()
         console.log("body:",body)
         response.writeHead(200,{'Content-Type':'text/html'});
-        response.end(' hello world')
+        response.end('hello world')
     })
 }).listen(8088);
 console.log("server start");
