@@ -48,6 +48,7 @@ class Request {
             connection.on('data',(data)=>{
                 console.log("respond==",data.toString())
                 parser.receive(data.toString());
+                console.log("parser.response",parser.response)
                 if(parser.isFinished){
                     resolve(parser.response);
                     connection.end()
@@ -82,11 +83,21 @@ class ResponseParser{
         this.headerValue="";
         this.bodyParser=null;
 
-        this.response="";
     }
     get isFinished(){
         return this.bodyParser && this.bodyParser.isFinished;
     }
+    get response(){
+        this.statusLine.match(/HTTP\/1\.1 ([0-9]+) ([\s\S]+)/)
+        return {
+            statusCode:RegExp.$1,
+            statusText:RegExp.$2,
+            headers:this.headers,
+            body:this.bodyParser.content.join("")
+        }
+
+    }
+
     receive(string){
         for(let i=0;i<string.length;i++){
             this.receiveChat(string.charAt(i));
@@ -167,8 +178,8 @@ class TrunkedBodyParser{
         this.WAITING_NEW_LINE_END=4;
         this.length=0;
         this.content=[];
-        this.isFinished=false;
         this.current=this.WAITING_LENGTH;
+        this.isFinished=false
 
     }
     //解析body里值
@@ -224,9 +235,7 @@ void async function(){
     })
     try{
         let response=await request.send();
-        response.then((data)=>{
-            console.log("response data==",data);
-        })
+        console.log("response==",response)
 
     }catch (e) {
         console.log("调用时报错",e)
