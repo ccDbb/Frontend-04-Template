@@ -39,16 +39,13 @@ class Request {
                     host:"127.0.0.1",
                     port:"8088"
                 },()=>{
-                    console.log(this.toString())
                     connection.write(this.toString());
                 })
             }
             //添加connection链接的监听
             //接收到服务端发送过来的数据
             connection.on('data',(data)=>{
-                console.log("respond==",data.toString())
                 parser.receive(data.toString());
-                console.log("parser.response",parser.response)
                 if(parser.isFinished){
                     resolve(parser.response);
                     connection.end()
@@ -102,7 +99,6 @@ class ResponseParser{
         for(let i=0;i<string.length;i++){
             this.receiveChat(string.charAt(i));
         }
-        console.log("-------bodyParser start------\n",this.bodyParser.content.join(""),"\n-------bodyParser------");
         // console.log("-------this.bodyParser start------\n",this.bodyParser,"\n-------this.bodyParser end------");
     }
     receiveChat(chat){
@@ -191,10 +187,12 @@ class TrunkedBodyParser{
             if(char==="\r"){
                 if(this.length===0){
                     this.isFinished=true;
+                    return;
                 }
                 this.current=this.WAITING_LENGTH_LINE_END;
             }else{
-                this.length=parseInt(char,16);
+                this.length=this.length*16
+                this.length+=parseInt(char,16);
             }
         }else if(this.current===this.WAITING_LENGTH_LINE_END){
             if(char==="\n"){//首行结束，
@@ -213,9 +211,11 @@ class TrunkedBodyParser{
                 this.current=this.WAITING_NEW_LINE_END;
             }
         }else if(this.current==this.WAITING_NEW_LINE_END){
-            if(this.current=="\n"){
+            if(char=="\n"){
                 this.current=this.WAITING_LENGTH;
             }
+        }else if(this.isFinished){
+
         }
 
     }
