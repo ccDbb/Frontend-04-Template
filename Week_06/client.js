@@ -1,4 +1,5 @@
 const net=require("net")
+const parser =require("../Week_07/parser")
 class Request {
     constructor(option){
         this.method=option.method||"GET";
@@ -235,7 +236,9 @@ void async function(){
     })
     try{
         let response=await request.send();
-        console.log("response==",response)
+       // console.log("response==",response)
+        let dom=parser.parserHTML(response.body)
+        console.log(JSON.stringify(dom,null,"   "))
 
     }catch (e) {
         console.log("调用时报错",e)
