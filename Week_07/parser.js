@@ -3,6 +3,7 @@ let currentToken=null,currentAttribute=null,currentTextNode=null
 let stack=[{type:"document",chindren:[]}]
 let css =require('css');
 let rules=[]
+const {layout} =require("../Week_08/layout")
 //添加css规则
 function addCssRules(text){
     var ast=css.parse(text);
@@ -78,7 +79,7 @@ function computesCSS(element){
 
 
             }
-            console.log(element.computedStyle)
+            // console.log(element.computedStyle)
         }
     }
 }
@@ -138,7 +139,7 @@ function emit(token){
            if(token.tagName=="style"){
                addCssRules(top.chindren[0].content)
            }
-
+           layout(token);
            stack.pop();
        }
        currentTextNode=null

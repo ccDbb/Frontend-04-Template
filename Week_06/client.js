@@ -1,5 +1,6 @@
 const net=require("net")
 const parser =require("../Week_07/parser")
+
 class Request {
     constructor(option){
         this.method=option.method||"GET";
