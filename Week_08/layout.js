@@ -83,6 +83,29 @@ function layout(element){
         crossStart='top';
         crossEnd='bottom';
     }
+    if(style.flexDirection === 'column'){
+        mainSize='height';
+        mainStart='top';
+        mainEnd='bottom';
+        mainSign=+1;
+
+        crossSign='width';
+        crossStart='lef';
+        crossEnd='right';
+    }
+    if(style.flexDirection === 'column-reverse'){
+        mainSize='height';
+        mainStart='bottom';
+        mainEnd='top';
+        mainSign=-1;
+
+        crossSign='width';
+        crossStart='lef';
+        crossEnd='right';
+    }
+    if(style.flexWrap == 'wrap-reverse'){
+
+    }
 
 
 
