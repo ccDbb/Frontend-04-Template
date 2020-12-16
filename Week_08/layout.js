@@ -5,6 +5,7 @@ function getStyle(element){
     console.log("getStyle",element.computedStyle)
 
     for(let prop in element.computedStyle){
+
         let pval=element.computedStyle[prop].value;
         element.style[prop]=element.computedStyle[prop].value;
 
@@ -14,6 +15,7 @@ function getStyle(element){
         if(pval.toString().match(/[0-9\.]+$/)){
             element.style[prop]=parseInt(pval);
         }
+
     }
 
     return element.style;
@@ -58,6 +60,71 @@ function layout(element){
     if(!style.alignContent || style.alignContent === 'auto'){
         style.alignContent='stretch'
     }
+
+    var mainSize,mainStart,mainEnd,mainSign,mainBase,//主轴属性
+        crossSize,crossStart,crossEnd,crossSign,crossBase;//交叉轴属性
+
+    if(style.flexDirection=='row'){//x轴正向排列
+
+        mainSize='width';
+        mainStart='left';
+        mainEnd='right';
+        mainSign=+1;
+        mainBase=0;
+
+        crossSize='height';
+        crossStart='top'
+        crossEnd='bottom'
+
+    }
+    if(style.flexDirection=='row-reverse'){
+
+        mainSize='width';
+        mainStart='right';
+        mainEnd='end';
+        mainSign=-1;
+        mainBase=style.width;
+
+        crossSize='height';
+        crossStart='top'
+        crossEnd='bottom'
+    }
+    if(style.flexDirection=='column'){
+
+        mainSize='height';
+        mainStart='top';
+        mainEnd='bottom';
+        mainSign=+1;
+        mainBase=0;
+
+        crossSize='width';
+        crossStart='left'
+        crossEnd='right'
+    }
+    if(style.flexDirection=='column-reverse'){
+
+        mainSize='height';
+        mainStart='bottom';
+        mainEnd='top';
+        mainSign=-1;
+        mainBase=style.height;
+
+        crossSize='width';
+        crossStart='left'
+        crossEnd='right'
+    }
+
+    if(style.flexWarp=='warp-reverse'){
+        var tmp =crossStart;
+        crossStart=crossEnd;
+        crossEnd=tmp;
+        crossSign=-1;
+
+    }else {
+        crossBase=0;
+        crossSign=1;
+    }
+
 
 
 }
