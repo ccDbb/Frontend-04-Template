@@ -20,7 +20,6 @@ function getStyle(element){
 
 }
 
-
 function layout(element){
     if(!element.computedStyle)return false;
 
@@ -45,19 +44,49 @@ function layout(element){
     if(!style.flexDirection || style.flexDirection === 'auto'){
         style.flexDirection='row';
     }
+    //定义交叉轴对其方式stretch，如果元素未设置高度则铺满高度
     if(!style.alignItems || style.alignItems === 'auto'){
         style.alignItems='stretch'
     }
+    //定义主轴对其方式，flex-start左对齐
     if(!style.justifyContent || style.justifyContent === 'auto'){
         style.justifyContent='flex-start'
     }
-
+    //定义如果主轴排不下如何换行nowrap默认不换行
     if(!style.flexWrap || style.flexWrap === 'auto'){
         style.flexWrap='nowrap'
     }
+    //定义多个交叉轴时对其方式。stretch默认
     if(!style.alignContent || style.alignContent === 'auto'){
         style.alignContent='stretch'
     }
+
+    var mainSize,mainStart,mainEnd,mainSign,mainBase,
+        crossSize,crossStart,crossEnd,crossSign,crossBase;
+    if(style.flexDirection === 'row'){
+        mainSize='width';
+        mainStart='left';
+        mainEnd='right';
+        mainSign=+1;
+
+        crossSign='height';
+        crossStart='top';
+        crossEnd='bottom';
+    }
+    if(style.flexDirection === 'row-reverse'){
+        mainSize='width';
+        mainStart='right';
+        mainEnd='left';
+        mainSign=-1;
+
+        crossSign='height';
+        crossStart='top';
+        crossEnd='bottom';
+    }
+
+
+
+
 
 
 }
