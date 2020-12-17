@@ -104,10 +104,51 @@ function layout(element){
         crossEnd='right';
     }
     if(style.flexWrap == 'wrap-reverse'){
-
+        var tmp=crossStart;
+        crossStart=crossEnd;
+        crossEnd=tmp;
+        crossSign=-1
+    }else{
+        crossBase=0;
+        crossSign=1;
     }
 
+    //如果父类主轴尺寸为auto，则，所有子元素都能放入一行，父元素宽度为所有子元素宽度的和
+    var isAutoMainSize=false;
+    if(!style[mainSize]){//auto size
+        elementStyle[mainSize]=0;
+        for(let i=0;i<items.length;i++){
+            var item=items[i];
+            var itemStyle=getStyle(item);
+            if(itemStyle[mainSize]!=null || itemStyle[mainSize] !== (void 0))
+            elementStyle[mainSize]+=itemStyle[mainSize];
+        }
+        isAutoMainSize=true;
+    }
 
+    //行
+    let flexLine=[];
+    var flexLines=[flexLine];
+
+    var mainSpace=elementStyle[mainSize]
+    var crossSpace=0;
+
+    for(var i=0;i<items.length;i++){
+        var item=items[i];
+        var itemStyle=getStyle(item);
+        if(itemStyle[mainSize] === null){
+            itemStyle[mainSize]=0
+        }
+
+        if(itemStyle.flex){
+            flexLine.push(items)
+        }else if(style.flexWrap === 'nowrap' && isAutoMainSize){//没太搞明白，上边明明判断过了为何这还要判断一遍
+            mainSpace-=itemStyle[mainSize];
+            if(itemStyle[crossSize]!=null && itemStyle[crossSize]!==(void 0))
+                crossSpace=Math.max(crossSpace,itemStyle[crossSize]);
+            flexLine.push(items)
+        }
+    }
 
 
 
