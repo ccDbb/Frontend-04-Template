@@ -1,6 +1,6 @@
 let EOF=Symbol("EOF");//结束标志
 let currentToken=null,currentAttribute=null,currentTextNode=null
-let stack=[{type:"document",chindren:[]}]
+let stack=[{type:"document",children:[]}]
 let css =require('css');
 let rules=[]
 const {layout} =require("../Week_08/layout")
@@ -113,7 +113,7 @@ function emit(token){
        let element={
            type:'element',
            attributes:[],
-           chindren:[]
+           children:[]
        }
 
        element.tagName=token.tagName;
@@ -125,7 +125,7 @@ function emit(token){
                })
            }
        }
-       top.chindren.push(element)
+       top.children.push(element)
       // element.parent=top;
        computesCSS(element);
        if(!token.isSelfClosing){
@@ -137,9 +137,9 @@ function emit(token){
            throw new Error("Tag start end not match")
        }else{
            if(token.tagName=="style"){
-               addCssRules(top.chindren[0].content)
+               addCssRules(top.children[0].content)
            }
-           layout(token);
+           layout(top);
            stack.pop();
        }
        currentTextNode=null
@@ -150,7 +150,7 @@ function emit(token){
                 type:'text',
                 content:""
             }
-            top.chindren.push(currentTextNode)
+            top.children.push(currentTextNode)
         }
        currentTextNode.content+=token.content;
     }

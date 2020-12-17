@@ -17,6 +17,9 @@ http.createServer((require,response)=>{
        `<html mea=a>
             <head>
                 <style>
+                body div{
+                display: flex;
+                }
                     body div #myid{
                         width: 100px;
                         background-color: red;

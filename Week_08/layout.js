@@ -133,6 +133,7 @@ function layout(element){
     var mainSpace=elementStyle[mainSize]
     var crossSpace=0;
 
+    //把每个子元素放入行
     for(var i=0;i<items.length;i++){
         var item=items[i];
         var itemStyle=getStyle(item);
@@ -147,9 +148,30 @@ function layout(element){
             if(itemStyle[crossSize]!=null && itemStyle[crossSize]!==(void 0))
                 crossSpace=Math.max(crossSpace,itemStyle[crossSize]);
             flexLine.push(items)
+
+        }else{
+            if(itemStyle[mainSize]>style[mainSize]){
+                itemStyle[mainSize]=style[mainSize]
+            }
+            if(itemStyle[mainSize] < mainSpace){
+                flexLine.push(item);
+            }else{
+                flexLine.mainSpace=mainSpace;
+                flexLine.crossSpace=crossSpace;
+
+                flexLine=[]
+                flexLines.push(flexLine);
+                flexLine.push(item);
+                crossSpace=0;
+            }
+            if(itemStyle[crossSize]!==null && itemStyle[crossSize] !==(void 0))
+                crossSpace=Math.max(crossSpace,itemStyle[crossSpace])
+            mainSpace-=itemStyle[mainSize]
         }
     }
-
+    flexLine.mainSpace=mainSpace;
+    console.log("-----items-----")
+    console.log(items)
 
 
 
