@@ -125,6 +125,25 @@ function layout(element){
         crossSign=1;
     }
 
+    var isAutoMainSize=false;
+    if(!style[mainSize]){//如果没有设置元素宽度
+        elementStyle[mainSize]=0;
+
+        for(var i=0;i<items.length;i++){
+            let item=items[i];
+            let itemStyle=getStyle(item);
+            if(itemStyle[mainSize] != null && itemStyle[mainSize] !==(void 0)){
+                elementStyle[mainSize]+=itemStyle[mainSize];
+            }
+
+        }
+        isAutoMainSize=true;
+
+    }
+
+
+    var flexLine=[];
+
 
 
 }
