@@ -170,8 +170,99 @@ function layout(element){
         }
     }
     flexLine.mainSpace=mainSpace;
+
+    if(style.flexWrap == 'nowrap' || isAutoMainSize){
+        flexLine.crossSpace=(style[crossSize] !== undefined) ? style[crossSize]:crossSpace;
+    }
     console.log("-----items-----")
     console.log(items)
+
+    //计算主轴item上尺寸
+
+    if(mainSpace<0){//在一行的情况下-----我的理解
+        var scalar=style[mainSize] / (style[mainSize]-mainSpace)
+        var currentMain=mainBase;
+        for( var i=0; i<items.length;i++){
+            var item=items[i];
+            var itemStyle=getStyle(item);
+
+            if(itemStyle.flex){
+                itemStyle[mainSize]=0;
+            }
+
+            itemStyle[mainSize]=itemStyle[mainSize]*scalar;
+            itemStyle[mainStart]=currentMain;
+            itemStyle[mainEnd]=currentMain+itemStyle[mainSize]*mainSign;
+            currentMain=itemStyle[mainEnd]
+        }
+    }else{
+        flexLines.forEach((items)=>{
+            var mainSpace=items.mainSpace;
+            var flexTotal=0;
+            for(var i=0;i<items.length;i++){
+                let item=items[i];
+                let itemStyle=getStyle(item);
+
+                if(itemStyle.flex !==null && (itemStyle.flex !== (void 0))){
+                    flexTotal+=itemStyle.flex;
+                    continue;
+                }
+            }
+
+            //如果有flex属性，那么flex属性对应的值将撑满整个主轴
+            if(flexTotal>0){
+                var currentMain=mainBase;
+                for(var i=0;i<items.length;i++){
+                    let item=items[i];
+                    let itemStyle=getStyle(item);
+
+                    if(itemStyle.flex){
+                        itemStyle[mainSign]=itemStyle.flex * (mainSpace / flexTotal);
+                    }
+
+                    itemStyle[mainStart]=currentMain;
+                    itemStyle[mainEnd]=currentMain+itemStyle[mainSize]*mainSign;
+                    currentMain=itemStyle[mainEnd]
+                }
+            }else{//没有flex属性，需要判断对其方式了
+                let currenMain=mainBase;
+                let step=0;
+                if(style.justifyContent === 'flex-start' ){
+
+                }
+                if(style.justifyContent === 'flex-end'){
+                    currentMain=mainSpace *mainSign +mainBase;
+                }
+                if(style.justifyContent === 'center'){
+                    currentMain=(mainSpace / 2) * mainSign + mainBase
+                }
+                if(style.justifyContent === 'space-between'){
+                    currentMain = mainBase;
+                    step=mainSpace / (items.length-1) * mainSign;
+                }
+                if(style.justifyContent === 'space-around'){
+                    step=mainSpace / items.length * mainSign;
+                    currentMain = step / 2 +mainBase;
+                }
+
+                for(var i=0;i<items.length; i++){
+                    let item=items[i];
+                    let itemStyle=getStyle(item);
+
+                    itemStyle[mainStart]=currentMain;
+                    itemStyle[mainEnd]=currentMain+itemStyle[mainSize]*mainSign;
+                    currentMain=itemStyle[mainEnd]+step
+
+                }
+
+
+
+            }
+
+        })
+
+    }
+
 
 
 
