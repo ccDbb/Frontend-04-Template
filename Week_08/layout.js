@@ -68,6 +68,7 @@ function layout(element){
         mainStart='left';
         mainEnd='right';
         mainSign=+1;
+        mainBase=0;
 
         crossSize='height';
         crossStart='top';
@@ -78,6 +79,7 @@ function layout(element){
         mainStart='right';
         mainEnd='left';
         mainSign=-1;
+        mainBase=style.width;
 
         crossSize='height';
         crossStart='top';
@@ -88,6 +90,7 @@ function layout(element){
         mainStart='top';
         mainEnd='bottom';
         mainSign=+1;
+        mainBase=0;
 
         crossSize='width';
         crossStart='lef';
@@ -98,6 +101,7 @@ function layout(element){
         mainStart='bottom';
         mainEnd='top';
         mainSign=-1;
+        mainBase=style.height;
 
         crossSize='width';
         crossStart='lef';
@@ -137,19 +141,20 @@ function layout(element){
     for(var i=0;i<items.length;i++){
         var item=items[i];
         var itemStyle=getStyle(item);
-        if(itemStyle[mainSize] === null){
+        if(!itemStyle[mainSize] || itemStyle[mainSize] === null){
             itemStyle[mainSize]=0
         }
 
         if(itemStyle.flex){
-            flexLine.push(items)
+            flexLine.push(item)
         }else if(style.flexWrap === 'nowrap' && isAutoMainSize){//没太搞明白，上边明明判断过了为何这还要判断一遍
             mainSpace-=itemStyle[mainSize];
             if(itemStyle[crossSize]!=null && itemStyle[crossSize]!==(void 0))
                 crossSpace=Math.max(crossSpace,itemStyle[crossSize]);
-            flexLine.push(items)
+            flexLine.push(item)
 
         }else{
+            //如果子元素的主轴尺寸大于父类主轴尺寸，这这只子元素主轴尺寸为父类主轴尺寸大小
             if(itemStyle[mainSize]>style[mainSize]){
                 itemStyle[mainSize]=style[mainSize]
             }
@@ -173,12 +178,14 @@ function layout(element){
 
     if(style.flexWrap == 'nowrap' || isAutoMainSize){
         flexLine.crossSpace=(style[crossSize] !== undefined) ? style[crossSize]:crossSpace;
+    }else{
+        flexLine.crossSpace=crossSpace;
     }
 
 
     //计算主轴item上尺寸
 
-    if(mainSpace<0){//在一行的情况下-----我的理解
+    if(mainSpace<0){//放不下的情况下
         var scalar=style[mainSize] / (style[mainSize]-mainSpace)
         var currentMain=mainBase;
         for( var i=0; i<items.length;i++){
@@ -216,7 +223,7 @@ function layout(element){
                     let itemStyle=getStyle(item);
 
                     if(itemStyle.flex){
-                        itemStyle[mainSign]=itemStyle.flex * (mainSpace / flexTotal);
+                        itemStyle[mainSize]=itemStyle.flex * (mainSpace / flexTotal);
                     }
 
                     itemStyle[mainStart]=currentMain;
@@ -224,7 +231,7 @@ function layout(element){
                     currentMain=itemStyle[mainEnd]
                 }
             }else{//没有flex属性，需要判断对其方式了
-                let currenMain=mainBase;
+                let currentMain=mainBase;
                 let step=0;
                 if(style.justifyContent === 'flex-start' ){
 

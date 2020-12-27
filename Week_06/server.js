@@ -27,7 +27,8 @@ http.createServer((require,response)=>{
                         
                     }
                     #container .c1{
-                        flex:1
+                        flex:1;
+                        height:100px
                     }
                 </style>
             </head>
