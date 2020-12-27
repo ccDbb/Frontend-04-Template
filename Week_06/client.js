@@ -237,9 +237,9 @@ void async function(){
     })
     try{
         let response=await request.send();
-       // console.log("response==",response)
+        console.log("---------response----------")
         let dom=parser.parserHTML(response.body)
-        // console.log(JSON.stringify(dom,null,"   "))
+        console.log(JSON.stringify(dom,null,"   "))
 
     }catch (e) {
         console.log("调用时报错",e)

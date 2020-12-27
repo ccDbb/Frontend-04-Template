@@ -69,7 +69,7 @@ function layout(element){
         mainEnd='right';
         mainSign=+1;
 
-        crossSign='height';
+        crossSize='height';
         crossStart='top';
         crossEnd='bottom';
     }
@@ -79,7 +79,7 @@ function layout(element){
         mainEnd='left';
         mainSign=-1;
 
-        crossSign='height';
+        crossSize='height';
         crossStart='top';
         crossEnd='bottom';
     }
@@ -89,7 +89,7 @@ function layout(element){
         mainEnd='bottom';
         mainSign=+1;
 
-        crossSign='width';
+        crossSize='width';
         crossStart='lef';
         crossEnd='right';
     }
@@ -99,7 +99,7 @@ function layout(element){
         mainEnd='top';
         mainSign=-1;
 
-        crossSign='width';
+        crossSize='width';
         crossStart='lef';
         crossEnd='right';
     }
@@ -174,8 +174,7 @@ function layout(element){
     if(style.flexWrap == 'nowrap' || isAutoMainSize){
         flexLine.crossSpace=(style[crossSize] !== undefined) ? style[crossSize]:crossSpace;
     }
-    console.log("-----items-----")
-    console.log(items)
+
 
     //计算主轴item上尺寸
 
@@ -262,6 +261,102 @@ function layout(element){
         })
 
     }
+
+    //计算交叉轴
+    var crossSpace;
+    //没有设置交叉轴尺寸，则以每行的行高加起来等于交叉轴尺寸
+    if(!style[crossSize]){
+        crossSpace=0;
+        elementStyle[crossSize]=0;
+        for(let i=0;i<flexLines.length;i++){
+            elementStyle[crossSize]+=flexLines[i].crossSpace;
+        }
+    }else{
+        crossSpace=style[crossSize];
+        for(let i=0;i<flexLines.length;i++){
+            crossSpace-=flexLines[i].crossSpace;
+        }
+    }
+
+    if(style.flexWrap === 'wrap-reverse'){
+        crossBase=style[crossSize];
+    }else{
+        crossBase=0;
+    }
+
+    var linesize=style[crossSize]/flexLines.length;
+    //处理交叉轴，每一行的位置。
+    var step;
+    if(style.alignContent === 'flex-start'){
+        crossBase+=0;
+        step=0;
+    }
+    if(style.alignContent === 'flex-end'){
+        crossBase+=crossSign * crossSpace;
+        step=0;
+    }
+    if(style.alignContent === 'center'){
+        crossBase+=crossSign * crossSpace / 2;
+        step=0;
+    }
+    if(style.alignContent === 'space-between'){
+        crossBase+=0;
+        step=crossSpace / (flexLines.length - 1);
+    }
+    if(style.alignContent === 'space-around'){
+
+        step=crossSpace / (flexLines.length );
+        crossBase+=crossSign * step / 2;
+    }
+    if(style.alignContent === 'stretch'){
+
+        step=0;
+        crossBase+=0;
+    }
+
+    //计算交叉轴每一个元素的位置
+    flexLines.forEach(items=>{
+        var lineCrossSize=style.alignContent === 'stretch' ?
+            items.crossSpace + crossSpace / flexLines.length :
+            items.crossSpace;
+        for(var i=0; i<items.length;i++){
+            var item=items[i];
+            var itemStyle = getStyle(item);
+
+            var align =itemStyle.alignSelf || style.alignItems;
+
+            if(itemStyle[crossSize] === null){
+                itemStyle[crossSize] = (align ==='stretch')?lineCrossSize:0;
+            }
+
+            if(align === 'flex-start'){
+                itemStyle[crossStart] = crossBase;
+                itemStyle[crossEnd] = itemStyle[crossStart] +crossSign * itemStyle[crossSize]
+            }
+            if(align === 'flex-end'){
+                itemStyle[crossEnd] = crossBase+crossSign *lineCrossSize;
+                itemStyle[crossStart] = itemStyle[crossEnd] - crossSign * itemStyle[crossSize]
+            }
+            if(align === 'center'){
+                itemStyle[crossStart] = crossBase+crossSign *(lineCrossSize-itemStyle[crossSize]) / 2;
+                itemStyle[crossEnd] = itemStyle[crossStart] + crossSign * itemStyle[crossSize];
+            }
+            if(align === 'stretch'){
+                itemStyle[crossStart] = crossBase;
+                itemStyle[crossEnd] = crossBase + crossSign * (
+                    (itemStyle[crossSize]!= null && itemStyle[crossSize]!= (void 0) ) ?
+                    itemStyle[crossSize] : lineCrossSize
+                );
+                itemStyle[crossSize] =crossSign *(itemStyle[crossEnd]-itemStyle[crossStart])
+            }
+        }
+        crossBase +=crossSign * (lineCrossSize+step)
+
+    });
+   // console.log("-----items-----")
+  //  console.log(items)
+
+
 
 
 
