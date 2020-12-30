@@ -1,5 +1,7 @@
 const net=require("net")
 const parser =require("../Week_07/parser")
+const images=require("images")
+const render=require("../Week_08/rander")
 
 class Request {
     constructor(option){
@@ -238,8 +240,11 @@ void async function(){
     try{
         let response=await request.send();
         console.log("---------response----------")
-        let dom=parser.parserHTML(response.body)
-        console.log(JSON.stringify(dom,null,"   "))
+        let dom=parser.parserHTML(response.body);
+        var viewport=images(800,600)
+
+        render(viewport,dom)
+        viewport.save("viewport.png")
 
     }catch (e) {
         console.log("调用时报错",e)
